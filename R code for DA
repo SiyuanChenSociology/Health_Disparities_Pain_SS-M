@@ -1,1 +1,981 @@
+# Final checks for Tables before submitting 
+# 10th Aug. 2024
+
+# 一律使用grand mean: Years
+# no centering的话，intercept不显著
+
+
+# Add the robustness check for reviewers' feedback (SS&M)
+# Changing the reference groups: using Urban
+
+dir()
+library(haven)
+data <- read_dta("Aug_3rd.dta")
+head(data)
+str(data)
+
+library(ggplot2)
+library(dplyr)
+library(expss)
+library(scales) #  percent in ggplot2
+library(ggeffects) # simple slope in ggplot2
+
+
+# Variables re-coding ----------------------------------------------------------
+## Age group
+summary(data$age)
+data$age_group <- cut(
+  data$age,
+  breaks = c(-Inf, 49, 54, 59, 64, 69, Inf),
+  labels = c("45-49", "50-54", "55-59", "60-64", "65-69", "70+"),
+  right = TRUE
+)
+table(data$age_group)
+
+data$age_group <- as.character(data$age_group)
+data$age_group[data$age_group == "45-49"] <- "45-49 in 2011"
+data$age_group[data$age_group == "50-54"] <- "50-54 in 2011"
+data$age_group[data$age_group == "55-59"] <- "55-59 in 2011"
+data$age_group[data$age_group == "60-64"] <- "60-64 in 2011"
+data$age_group[data$age_group == "65-69"] <- "65-69 in 2011"
+data$age_group[data$age_group == "70+"]   <- "70+ in 2011"
+table(data$age_group)
+
+
+## Gender
+data$gender <- as.character(data$gender)
+data$gender[data$gender == "0"] <- "Female"
+data$gender[data$gender == "1"] <- "Male"
+table(data$gender)
+
+
+## Marital
+str(data$marital)
+data$marital <- as_factor(data$marital) # using library: haven
+table(data$marital)
+
+
+## Urban-rural group
+data$urban <- as.character(data$urban)
+data$urban[data$urban == "0"] <- "Rural"
+data$urban[data$urban == "1"] <- "Semi-Urban"
+data$urban[data$urban == "2"] <- "Urban"
+table(data$urban)
+
+str(data$urban)
+data$urban <- as.factor(data$urban)
+levels(data$urban)
+data$urban <- relevel(data$urban, ref = "Semi-Urban")
+levels(data$urban)
+
+## Education
+data$education <- as_factor(data$education)
+levels(data$education) # 一定是factor才用levels
+
+data$education <- as.character(data$education)
+print(str(data$education))
+data$education[data$education == "0"] <- "0 Illiterate"
+data$education[data$education == "1"] <- "1 Less than elementary school"
+data$education[data$education == "2"] <- "2 Up to elementary school"
+data$education[data$education == "3"] <- "3 Middle school"
+data$education[data$education == "4"] <- "4 High School or beyond"
+table(data$education)
+
+
+# ## 删除 data 数据框中 chronic condition 列取值为 2 = missing的观测
+# ## 删了之后，交互项显著性不太好。marginal significant
+# data <- data[!(data$arthritis_pre_2011 == 2 | 
+#                    data$hypertension_pre_2011 == 2 |
+#                    data$diabetes_pre_2011 == 2 |
+#                #    data$heart_pre_2011 == 2 |
+#                #    data$kidney_pre_2011 == 2 |
+#                    data$dyslipidemia_pre_2011 == 2), ]
+
+# arthritis
+data$arthritis_pre_2011 <- as.factor(data$arthritis_pre_2011)
+data$arthritis_pre_2011 <- as.character(data$arthritis_pre_2011)
+table(data$arthritis_pre_2011)
+
+data$arthritis_pre_2011[data$arthritis_pre_2011 == "0"] <- "No"
+data$arthritis_pre_2011[data$arthritis_pre_2011 == "1"] <- "Yes"
+data$arthritis_pre_2011[data$arthritis_pre_2011 == "2"] <- "Missing"
+
+data$arthritis_pre_2011 <- as.factor(data$arthritis_pre_2011)
+levels(data$arthritis_pre_2011)
+data$arthritis_pre_2011 <- relevel(data$arthritis_pre_2011, ref = "Yes")
+table(data$arthritis_pre_2011)
+
+# hypertension
+data$hypertension_pre_2011 <- as.factor(data$hypertension_pre_2011)
+data$hypertension_pre_2011 <- as.character(data$hypertension_pre_2011)
+table(data$hypertension_pre_2011)
+
+data$hypertension_pre_2011[data$hypertension_pre_2011 == "0"] <- "No"
+data$hypertension_pre_2011[data$hypertension_pre_2011 == "1"] <- "Yes"
+data$hypertension_pre_2011[data$hypertension_pre_2011 == "2"] <- "Missing"
+
+data$hypertension_pre_2011 <- as.factor(data$hypertension_pre_2011)
+levels(data$hypertension_pre_2011)
+data$hypertension_pre_2011 <- relevel(data$hypertension_pre_2011, ref = "Yes")
+table(data$hypertension_pre_2011)
+
+
+# Diabetes
+data$diabetes_pre_2011 <- as.factor(data$diabetes_pre_2011)
+data$diabetes_pre_2011 <- as.character(data$diabetes_pre_2011)
+table(data$diabetes_pre_2011)
+
+data$diabetes_pre_2011[data$diabetes_pre_2011 == "0"] <- "No"
+data$diabetes_pre_2011[data$diabetes_pre_2011 == "1"] <- "Yes"
+data$diabetes_pre_2011[data$diabetes_pre_2011 == "2"] <- "Missing"
+
+data$diabetes_pre_2011 <- as.factor(data$diabetes_pre_2011)
+levels(data$diabetes_pre_2011)
+data$diabetes_pre_2011 <- relevel(data$diabetes_pre_2011, ref = "Yes")
+table(data$diabetes_pre_2011)
+
+
+# dyslipidemia
+data$dyslipidemia_pre_2011 <- as.factor(data$dyslipidemia_pre_2011)
+data$dyslipidemia_pre_2011 <- as.character(data$dyslipidemia_pre_2011)
+table(data$dyslipidemia_pre_2011)
+
+data$dyslipidemia_pre_2011[data$dyslipidemia_pre_2011 == "0"] <- "No"
+data$dyslipidemia_pre_2011[data$dyslipidemia_pre_2011 == "1"] <- "Yes"
+data$dyslipidemia_pre_2011[data$dyslipidemia_pre_2011 == "2"] <- "Missing"
+
+data$dyslipidemia_pre_2011 <- as.factor(data$dyslipidemia_pre_2011)
+levels(data$dyslipidemia_pre_2011)
+data$dyslipidemia_pre_2011 <- relevel(data$dyslipidemia_pre_2011, ref = "Yes")
+table(data$dyslipidemia_pre_2011)
+
+
+# # 
+# # data$heart_pre_2011 <- as.factor(data$heart_pre_2011)
+# data$heart_pre_2011 <- as.character(data$heart_pre_2011)
+# # table(data$heart_pre_2011)
+# # 
+# data$kidney_pre_2011 <- as.factor(data$kidney_pre_2011)
+# data$kidney_pre_2011 <- as.character(data$kidney_pre_2011)
+# # table(data$kidney_pre_2011)
+
+
+## hhe_quartile
+table(data$pche_quartile)
+
+# library(dplyr)
+# print(
+#   freq_distribution <- data %>%
+#     filter(wave == 2011) %>%
+#     count(pche_quartile)
+# )
+# ### missing in wave = 2011, # is 272 --> 删了得了 # 别删，删了显著性不好
+# data <- data[!(data$pche_quartile == "5") , ]
+
+data$pche_quartile <- as.character(data$pche_quartile)
+data$pche_quartile[data$pche_quartile == "1"] <- "1st quartile"
+data$pche_quartile[data$pche_quartile == "2"] <- "2nd quartile"
+data$pche_quartile[data$pche_quartile == "3"] <- "3rd quartile"
+data$pche_quartile[data$pche_quartile == "4"] <- "4th quartile"
+data$pche_quartile[data$pche_quartile == "5"] <- "Missing"
+table(data$pche_quartile)
+
+data$pche_quartile <- as.factor(data$pche_quartile)
+data$pche_quartile <- relevel(data$pche_quartile, ref = "4th quartile")
+table(data$pche_quartile)
+
+
+# # insurance
+# table(data$insurance)
+# typeof(data$insurance)
+# 
+# data$insurance <- as.character(data$insurance)
+# data$insurance[data$insurance == "0"] <- "No insurance"
+# data$insurance[data$insurance == "1"] <- "Urban and rural resident medical insurance"
+# data$insurance[data$insurance == "2"] <- "Urban employee medical insurance"
+# 
+# data$insurance <- as.factor(data$insurance)
+# data$insurance <- relevel(data$insurance, 
+#                           ref = "Urban employee medical insurance")
+# 
+# # 不放保险了，放了以后urban_type不太显著
+
+# 最终id数量看看
+unique_values <- data %>% distinct(id)
+print(unique_values) ## n is 16479, 16479/17708 ～= 93.1%
+
+# X: Years after the baseline
+data$years <- data$wave - 2011
+
+
+### Get Binary outcome
+data <- data %>%
+  mutate(pain01 = ifelse(pain > 0, 1, 0))
+
+table(data$pain01) # PAIN = 0, N IS 39178 // after deleting chronic condition, = 0, n is 37146, = 1, n is 28009
+table(data$pain)   # PAIN = 0, N IS 39178 // consistent with pain01 
+
+mean_pain01_by_wave_urban <- data %>%
+  group_by(wave, urban) %>%
+  summarize(mean_pain = mean(pain01, na.rm = TRUE)) %>%
+  ungroup()
+print(mean_pain01_by_wave_urban)
+
+
+ggplot(mean_pain01_by_wave_urban, aes(x = wave, y = mean_pain, color = urban, group = urban)) +
+  geom_line() +
+  geom_point() +
+  scale_x_continuous(breaks = c(2011, 2013, 2015, 2018, 2020)) +
+  scale_y_continuous(labels = percent) +  #  y axis in percentage
+  labs(title = "Pain Prevalence by Wave and Urban",
+       x = "Wave",
+       y = "Pain Prevalence") +
+  theme_minimal()
+
+
+
+
+# Model prepare / Data & variable ----------------------------------------------
+## Key predictors centering
+
+### Full sample
+# grand mean of years, mean = 4.11
+mean(data$years)
+full_data <- data
+
+full_data$years <- full_data$years - 4.11
+summary(full_data$years)
+
+### Sample without survey wave 2013
+no2013_data <- data %>% filter(wave != 2013)
+mean(no2013_data$years) # mean = 4.62
+
+no2013_data$years <- no2013_data$years - 4.62
+summary(no2013_data$years)
+
+
+### Sample Age_group >= 70 in baseline wave
+no70_data <- data %>% filter(age_group != "70+ in 2011")
+mean(no70_data$years) # mean = 4.19
+
+no70_data$years <- no70_data$years - 4.19
+summary(no70_data$years)
+
+
+# Using OR + 95% CI ------------------------------------------------------------
+# 自定义函数来显示OR、原始系数、标准误差、显著性和95% CI
+summary_gee_or <- function(model) {
+  # 提取模型的系数表
+  model_summary <- summary(model)$coefficients
+  
+  # 提取原始系数、标准误差、z值和p值
+  coefs <- model_summary[, "Estimate"]
+  se <- model_summary[, "Std.err"]
+  
+  # 检查是否有 "z value" 列名，如果没有则计算 z value
+  if (!"z value" %in% colnames(model_summary)) {
+    z_value <- coefs / se
+  } else {
+    z_value <- model_summary[, "z value"]
+  }
+  
+  p_value <- 2 * pnorm(-abs(z_value)) # 计算 p 值
+  
+  # 计算OR和95%置信区间
+  exp_coefs <- exp(coefs)
+  lower_ci <- exp(coefs - 1.96 * se)
+  upper_ci <- exp(coefs + 1.96 * se)
+  
+  # 添加显著性星号
+  significance <- ifelse(p_value < 0.001, "***",
+                         ifelse(p_value < 0.01, "**",
+                                ifelse(p_value < 0.05, "*",
+                                       ifelse(p_value < 0.1, ".", ""))))
+  
+  # 组织结果为数据框
+  results <- data.frame(
+    Variable = rownames(model_summary), # 添加变量名
+    Estimate = coefs,
+    `Std. Error` = se,
+    `z value` = z_value,
+    `Pr(>|z|)` = p_value,
+    OR = exp_coefs,
+    `2.5 %` = lower_ci,
+    `97.5 %` = upper_ci,
+    Significance = significance
+  )
+  
+  return(results)
+}
+
+
+# test_without_panel1 <- lm(
+#   pain01 ~ years + urban + years * urban + gender  + marital + age_group + 
+#     education + pche_quartile + arthritis_pre_2011 +
+#     hypertension_pre_2011 + dyslipidemia_pre_2011 + diabetes_pre_2011,
+#   data = full_data
+# )
+# summary(test_without_panel1)
+# 
+# 
+# test_without_panel2 <- glm(
+#   pain01 ~ years + urban + years * urban + gender  + marital + age_group + 
+#     education + pche_quartile + arthritis_pre_2011 +
+#     hypertension_pre_2011 + dyslipidemia_pre_2011 + diabetes_pre_2011,
+#   family = "binomial",
+#   data = full_data
+# )
+# summary(test_without_panel2)
+# summary_gee_or(test_without_panel2)
+
+# GEE Logit Models -------------------------------------------------------------
+library(geepack)
+library(MASS)
+
+
+## models check ----------------------------------------------------------------
+# 全样本
+full_1 <- geeglm(
+  pain01 ~ years + urban + years * urban + gender  + marital + age_group + 
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + dyslipidemia_pre_2011 + diabetes_pre_2011,
+  id = id,
+  data = full_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+summary(full_1)
+QIC(full_1)
+
+# OR format
+summary_gee_or(full_1)
+
+
+
+# Interaction effect plot
+predictions <- plot_predictions(full_1, condition = c("years", "urban"), draw = FALSE)
+
+# 检查 predictions 数据结构
+head(predictions)
+
+
+# 创建 ggplot，使用预测数据
+ggplot(predictions, aes(x = years, y = estimate, linetype = urban)) + 
+  geom_line() + 
+  labs(
+    title = "Predicted pain trajectories by urban-rural classification", 
+    x = "Years after baseline survey", 
+    y = "Predicted pain prevalence",
+    linetype = "Urban-rural classification"
+  ) +
+  scale_x_continuous(
+    breaks = seq(-4.11, 4.89, 1), 
+    labels = seq(0, 9, 1)
+  ) + 
+  scale_y_continuous(labels = scales::percent) + 
+  scale_linetype_manual(values = c("solid", "dashed", "dotted")) +  # 设置线型
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16), 
+    axis.title.x = element_text(size = 14), 
+    axis.title.y = element_text(size = 14), 
+    axis.text = element_text(size = 12), 
+    legend.position = "bottom", 
+    legend.text = element_text(size = 12), 
+    legend.title = element_text(size = 14) 
+  )
+
+
+
+
+
+# ----------- For the reviewer 2: feedback -------------------------------------
+## change the reference group: Urban-rural group
+
+full_data$urban <- relevel(full_data$urban, ref = "Urban")
+levels(full_data$urban)
+
+
+full_1_change_rf <- geeglm(
+  pain01 ~ years + urban + years * urban + gender  + marital + age_group + 
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + dyslipidemia_pre_2011 + diabetes_pre_2011,
+  id = id,
+  data = full_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+summary(full_1_change_rf)
+QIC(full_1_change_rf)
+
+# OR format
+summary_gee_or(full_1_change_rf)
+summary_gee_or2(full_1_change_rf)
+
+
+
+# Sensitivity Analysis ---------------------------------------------------------
+# no 2013 wave -----------------------------------------------------------------
+full_2 <- geeglm(
+  pain01 ~ years + urban + years * urban + gender  + marital + age_group + 
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + dyslipidemia_pre_2011 + diabetes_pre_2011,
+  id = id,
+  data = no2013_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+summary(full_2)
+QIC(full_2)
+
+# OR format
+summary_gee_or(full_2)
+summary_gee_or2(full_2)
+
+# Interaction effect plot
+slopes_2 <- ggpredict(full_2, terms = c("years", "urban"))
+slopes_2$x <- slopes_2$x + 4.62
+slopes_2$x
+
+group_levels <- unique(slopes_2$group)
+
+# 创建 simple slopes 图形对象，使用 linetype 区分 urban 水平，所有线条颜色均为黑色
+plot_simple_slopes_2 <- ggplot(slopes_2, aes(x = x, y = predicted, linetype = factor(group))) +
+  geom_line(size = 0.35, color = "black") +  # 设置线条大小和颜色为黑色
+  scale_y_continuous(labels = percent) +  # 将 y 轴的值显示为百分比
+  #  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2, color = "black") +  # 添加误差条
+  labs(x = "Years after baseline survey", y = "Predicted Pain Prevalence", linetype = "Urban-rural classification") +
+  ggtitle("Predicted pain prevalence by aging process and urban-rural classification") +
+  scale_linetype_manual(values = c( "solid", "twodash", "dotted")) +  # 设置线条类型
+  # scale_x_continuous(breaks = c(2011, 2013, 2015, 2018, 2020))+
+  scale_x_continuous(breaks = c(0:9)) +  # 设置特定时间点 
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),  # 标题居中
+    legend.position = "bottom"  # 图例放在最下面
+  )
+
+print(plot_simple_slopes_2)
+
+
+# ----------- For the reviewer 2: feedback -------------------------------------
+## change the reference group: Urban-rural group
+
+no2013_data$urban <- relevel(no2013_data$urban, ref = "Urban")
+levels(no2013_data$urban)
+
+
+full_2_change_rf <- geeglm(
+  pain01 ~ years + urban + years * urban + gender  + marital + age_group + 
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + dyslipidemia_pre_2011 + diabetes_pre_2011,
+  id = id,
+  data = no2013_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+summary(full_2_change_rf)
+QIC(full_2_change_rf)
+
+# OR format
+summary_gee_or(full_2_change_rf)
+
+summary_gee_or2(full_2_change_rf)
+
+
+# no age_group >= 70 -----------------------------------------------------------
+full_3 <- geeglm(
+  pain01 ~ years + urban + years * urban + gender  + marital + age_group + 
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + dyslipidemia_pre_2011 + diabetes_pre_2011,
+  id = id,
+  data = no70_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+summary(full_3)
+QIC(full_3)
+
+# OR format
+summary_gee_or(full_3)
+
+
+# Interaction effect plot
+slopes_3 <- ggpredict(full_3, terms = c("years", "urban"))
+slopes_3$x <- slopes_3$x + 4.19
+slopes_3$x
+
+group_levels <- unique(slopes_3$group)
+
+# 创建 simple slopes 图形对象，使用 linetype 区分 urban 水平，所有线条颜色均为黑色
+plot_simple_slopes_3 <- ggplot(slopes_3, aes(x = x, y = predicted, linetype = factor(group))) +
+  geom_line(size = 0.35, color = "black") +  # 设置线条大小和颜色为黑色
+  scale_y_continuous(labels = percent) +  # 将 y 轴的值显示为百分比
+  #  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2, color = "black") +  # 添加误差条
+  labs(x = "Years after baseline survey", y = "Predicted Pain Prevalence", linetype = "Urban-rural classification") +
+  ggtitle("Predicted pain prevalence by aging process and urban-rural classification") +
+  scale_linetype_manual(values = c( "solid", "twodash", "dotted")) +  # 设置线条类型
+  # scale_x_continuous(breaks = c(2011, 2013, 2015, 2018, 2020))+
+  scale_x_continuous(breaks = c(0:9)) +  # 设置特定时间点 
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),  # 标题居中
+    legend.position = "bottom"  # 图例放在最下面
+  )
+
+print(plot_simple_slopes_3)
+
+
+# ----------- For the reviewer 2: feedback -------------------------------------
+## change the reference group: Urban-rural group
+
+no70_data$urban <- relevel(no70_data$urban, ref = "Urban")
+levels(no70_data$urban)
+
+full_3_change_rf <- geeglm(
+  pain01 ~ years + urban + years * urban + gender  + marital + age_group + 
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + dyslipidemia_pre_2011 + diabetes_pre_2011,
+  id = id,
+  data = no70_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+summary(full_3_change_rf)
+QIC(full_3_change_rf)
+
+# OR format
+summary_gee_or(full_3_change_rf)
+summary_gee_or2(full_3_change_rf)
+
+# Interaction effect plot
+slopes_3_rf <- ggpredict(full_3_change_rf, terms = c("years", "urban"))
+slopes_3_rf$x <- slopes_3_rf$x + 4.19
+slopes_3_rf$x
+
+group_levels <- unique(slopes_3_rf$group)
+
+# 创建 simple slopes 图形对象，使用 linetype 区分 urban 水平，所有线条颜色均为黑色
+plot_simple_slopes_3_rf <- ggplot(slopes_3_rf, aes(x = x, y = predicted, linetype = factor(group))) +
+  geom_line(size = 0.35, color = "black") +  # 设置线条大小和颜色为黑色
+  scale_y_continuous(labels = percent) +  # 将 y 轴的值显示为百分比
+  #  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2, color = "black") +  # 添加误差条
+  labs(x = "Years after baseline survey", y = "Predicted Pain Prevalence", linetype = "Urban-rural classification") +
+  ggtitle("Predicted pain prevalence by aging process and urban-rural classification") +
+  scale_linetype_manual(values = c( "solid", "twodash", "dotted")) +  # 设置线条类型
+  # scale_x_continuous(breaks = c(2011, 2013, 2015, 2018, 2020))+
+  scale_x_continuous(breaks = c(0:9)) +  # 设置特定时间点 
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),  # 标题居中
+    legend.position = "bottom"  # 图例放在最下面
+  )
+
+print(plot_simple_slopes_3_rf)
+
+
+
+
+# Output Tables for Paper ------------------------------------------------------
+library(dplyr)
+library(tidyr)
+library(knitr)
+
+# 1. Descriptive Analysis (Using baseline wave)
+data_wave_2011 <- data %>% filter(wave == 2011)
+
+data_wave_2011$urban <- as.factor(data_wave_2011$urban)
+typeof(data_wave_2011$urban)
+table(data_wave_2011$urban)
+
+
+
+
+
+# 假设数据框名称是 data_wave_2011
+data_des <- data_wave_2011  # 使用 data_wave_2011 作为数据框
+
+# 描述统计和卡方检验函数
+describe_and_test <- function(data_des, grouping_var, y_vars) {
+  results <- list()
+  
+  for (y_var in y_vars) {
+    # 计算频数
+    freq_table <- data_des %>%
+      group_by(!!sym(grouping_var), !!sym(y_var)) %>%
+      summarise(count = n(), .groups = 'drop') %>%
+      ungroup()
+    
+    # 计算每组的总数，用于计算百分比
+    total_counts <- data_des %>%
+      group_by(!!sym(grouping_var)) %>%
+      summarise(total = n(), .groups = 'drop')
+    
+    freq_table <- freq_table %>%
+      left_join(total_counts, by = grouping_var) %>%
+      mutate(percent = format(round(count / total * 100, 3), nsmall = 3))
+    
+    # 计算列百分比
+    total_col_counts <- data_des %>%
+      group_by(!!sym(y_var)) %>%
+      summarise(total_col = n(), .groups = 'drop')
+    
+    col_percent <- freq_table %>%
+      left_join(total_col_counts, by = y_var) %>%
+      mutate(col_percent = format(round(count / total_col * 100, 3), nsmall = 3)) %>%
+      arrange(!!sym(grouping_var), !!sym(y_var))
+    
+    # 进行卡方检验
+    table <- table(data_des[[grouping_var]], data_des[[y_var]])
+    chi_test <- chisq.test(table)
+    
+    # 将结果存储到列表中
+    results[[y_var]] <- list(
+      freq_table = freq_table,
+      col_percent = col_percent,
+      chi_test_table = table,
+      chi_test_result = list(
+        statistic = format(round(chi_test$statistic, 3), nsmall = 3),
+        p_value = format(round(chi_test$p.value, 3), nsmall = 3),
+        df = chi_test$parameter
+      )
+    )
+  }
+  
+  return(results)
+}
+
+# 定义要分析的变量
+y_vars <- c("gender", "marital", "age_group", "education", "pche_quartile", 
+            "arthritis_pre_2011", "hypertension_pre_2011", 
+            "dyslipidemia_pre_2011", "diabetes_pre_2011") 
+grouping_var <- "urban"  # 分组变量
+
+# 计算描述统计和卡方检验
+results <- describe_and_test(data_des, grouping_var, y_vars)
+
+# 打印结果
+for (y_var in y_vars) {
+  cat("\n分析变量：", y_var, "\n")
+  
+  cat("频数和百分比：\n")
+  print(results[[y_var]]$freq_table)
+  
+  cat("\n列百分比：\n")
+  print(results[[y_var]]$col_percent)
+  
+  cat("\n卡方检验列联表：\n")
+  print(results[[y_var]]$chi_test_table)
+  
+  cat("\n卡方检验结果：\n")
+  cat("卡方统计量：", results[[y_var]]$chi_test_result$statistic, "\n")
+  cat("p 值：", results[[y_var]]$chi_test_result$p_value, "\n")
+  cat("自由度：", results[[y_var]]$chi_test_result$df, "\n")
+}
+
+freq_table_1 <- table(data_des$arthritis_pre_2011)
+percent_table_1 <- round(prop.table(freq_table_1) * 100, 3)
+percent_table_1
+
+
+freq_table_2 <- table(data_des$hypertension_pre_2011)
+freq_table_2
+percent_table_2 <- round(prop.table(freq_table_2) * 100, 3)
+percent_table_2
+
+
+freq_table_3 <- table(data_des$diabetes_pre_2011)
+freq_table_3
+percent_table_3 <- round(prop.table(freq_table_3) * 100, 3)
+percent_table_3
+
+freq_table_4 <- table(data_des$dyslipidemia_pre_2011)
+freq_table_4
+percent_table_4 <- round(prop.table(freq_table_4) * 100, 3)
+percent_table_4
+
+
+# Tables in the paper or appendix ----------------------------------------------
+## full sample
+### model 1: urban, years, demographics
+t1m1 <- geeglm(
+  pain01 ~ years + urban + gender  + marital + age_group,
+  id = id,
+  data = full_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+
+summary(t1m1)
+QIC(t1m1)
+
+# OR format
+summary_gee_or(t1m1)
+
+### model 2: urban, years, demographics + SES
+t1m2 <- geeglm(
+  pain01 ~ years + urban + gender  + marital + age_group +
+    education + pche_quartile,
+  id = id,
+  data = full_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+
+summary(t1m2)
+QIC(t1m2)
+
+# OR format
+summary_gee_or(t1m2)
+
+
+### model 3: urban, years, demographics + SES + Health conditions
+t1m3 <- geeglm(
+  pain01 ~ years + urban + gender  + marital + age_group +
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + dyslipidemia_pre_2011 + diabetes_pre_2011,
+  id = id,
+  data = full_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+
+summary(t1m3)
+QIC(t1m3)
+
+# OR format
+summary_gee_or(t1m3)
+
+
+### model 4: urban, years, demographics + SES + Health conditions + interaction
+t1m4 <- geeglm(
+  pain01 ~ years + urban + years * urban + gender  + marital + age_group + 
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + dyslipidemia_pre_2011 + diabetes_pre_2011,
+  id = id,
+  data = full_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+
+summary(t1m4)
+QIC(t1m4)
+
+# OR format
+summary_gee_or(t1m4)
+
+
+
+
+# Tables for sensitivity analysis ----------------------------------------------
+## Data without Wave = 2013
+### model 1: urban, years, demographics
+t2m1 <- geeglm(
+  pain01 ~ years + urban + gender  + marital + age_group,
+  id = id,
+  data = no2013_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+
+summary(t2m1)
+QIC(t2m1)
+
+# OR format
+summary_gee_or(t2m1)
+
+### model 2: urban, years, demographics + SES
+t2m2 <- geeglm(
+  pain01 ~ years + urban + gender  + marital + age_group +
+    education + pche_quartile,
+  id = id,
+  data = no2013_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+
+summary(t2m2)
+QIC(t2m2)
+
+# OR format
+summary_gee_or(t2m2)
+
+
+### model 3: urban, years, demographics + SES + Health conditions
+t2m3 <- geeglm(
+  pain01 ~ years + urban + gender  + marital + age_group +
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + diabetes_pre_2011 + dyslipidemia_pre_2011,
+  id = id,
+  data = no2013_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+
+summary(t2m3)
+QIC(t2m3)
+
+# OR format
+summary_gee_or(t2m3)
+
+
+### model 4: urban, years, demographics + SES + Health conditions + interaction
+t2m4 <- geeglm(
+  pain01 ~ years + urban + years * urban + gender  + marital + age_group + 
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + diabetes_pre_2011 + dyslipidemia_pre_2011,
+  id = id,
+  data = no2013_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+
+summary(t2m4)
+QIC(t2m4)
+
+# OR format
+summary_gee_or(t2m4)
+
+
+
+
+# Tables for sensitivity analysis
+## Data without Age_group >= 70
+### model 1: urban, years, demographics
+t3m1 <- geeglm(
+  pain01 ~ years + urban + gender  + marital + age_group,
+  id = id,
+  data = no70_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+
+summary(t3m1)
+QIC(t3m1)
+
+# OR format
+summary_gee_or(t3m1)
+
+
+### model 2: urban, years, demographics + SES
+t3m2 <- geeglm(
+  pain01 ~ years + urban + gender  + marital + age_group +
+    education + pche_quartile,
+  id = id,
+  data = no70_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+
+summary(t3m2)
+QIC(t3m2)
+
+# OR format
+summary_gee_or(t3m2)
+
+
+### model 3: urban, years, demographics + SES + Health conditions
+t3m3 <- geeglm(
+  pain01 ~ years + urban + gender  + marital + age_group +
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + diabetes_pre_2011 + dyslipidemia_pre_2011,
+  id = id,
+  data = no70_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+
+summary(t3m3)
+QIC(t3m3)
+
+# OR format
+summary_gee_or(t3m3)
+
+
+### model 4: urban, years, demographics + SES + Health conditions + interaction
+t3m4 <- geeglm(
+  pain01 ~ years + urban + years * urban + gender  + marital + age_group + 
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + diabetes_pre_2011 + dyslipidemia_pre_2011,
+  id = id,
+  data = no70_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+
+summary(t3m4)
+QIC(t3m4)
+
+# OR format
+summary_gee_or(t3m4)
+
+
+
+
+
+### QIC test different GEE models
+full_1 <- geeglm(
+  pain01 ~ years + urban + years * urban + gender  + marital + age_group + 
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + dyslipidemia_pre_2011 + diabetes_pre_2011,
+  id = id,
+  data = full_data,
+  family = binomial(link = "logit"),
+  corstr = "unstructured" 
+)
+summary(full_1)
+QIC(full_1)
+qic_unstructured <- QIC(full_1)
+
+
+# Model with exchangeable correlation structure
+full_2 <- geeglm(
+  pain01 ~ years + urban + years * urban + gender + marital + age_group + 
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + dyslipidemia_pre_2011 + diabetes_pre_2011,
+  id = id,
+  data = full_data,
+  family = binomial(link = "logit"),
+  corstr = "exchangeable" 
+)
+summary(full_2)
+qic_exchangeable <- QIC(full_2)
+
+# Model with AR(1) correlation structure
+full_3 <- geeglm(
+  pain01 ~ years + urban + years * urban + gender + marital + age_group + 
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + dyslipidemia_pre_2011 + diabetes_pre_2011,
+  id = id,
+  data = full_data,
+  family = binomial(link = "logit"),
+  corstr = "ar1" 
+)
+summary(full_3)
+qic_ar1 <- QIC(full_3)
+
+# Model with independence correlation structure
+full_4 <- geeglm(
+  pain01 ~ years + urban + years * urban + gender + marital + age_group + 
+    education + pche_quartile + arthritis_pre_2011 +
+    hypertension_pre_2011 + dyslipidemia_pre_2011 + diabetes_pre_2011,
+  id = id,
+  data = full_data,
+  family = binomial(link = "logit"),
+  corstr = "independence" 
+)
+summary(full_4)
+qic_independence <- QIC(full_4)
+
+
+
+qic_values <- data.frame(
+  Correlation_Structure = c("Unstructured", "Exchangeable", "AR1", "Independence"),
+  QIC = c(qic_unstructured, qic_exchangeable, qic_ar1, qic_independence)
+)
+print(qic_values)
+
+# 找到QIC最小的模型
+best_model <- qic_values[which.min(qic_values$QIC), ]
+print(best_model)
+
 
