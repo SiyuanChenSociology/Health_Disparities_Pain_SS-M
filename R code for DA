@@ -2,7 +2,6 @@
 # 10th Aug. 2024
 
 # 一律使用grand mean: Years
-# no centering的话，intercept不显著
 
 
 # Add the robustness check for reviewers' feedback (SS&M)
