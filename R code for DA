@@ -1,7 +1,7 @@
 # Final checks for Tables before submitting 
 # 10th Aug. 2024
 
-# 一律使用grand mean: Years
+# grand mean: Years
 
 
 # Add the robustness check for reviewers' feedback (SS&M)
@@ -69,7 +69,7 @@ levels(data$urban)
 
 ## Education
 data$education <- as_factor(data$education)
-levels(data$education) # 一定是factor才用levels
+levels(data$education) 
 
 data$education <- as.character(data$education)
 print(str(data$education))
@@ -167,7 +167,7 @@ table(data$pche_quartile)
 #     filter(wave == 2011) %>%
 #     count(pche_quartile)
 # )
-# ### missing in wave = 2011, # is 272 --> 删了得了 # 别删，删了显著性不好
+# 
 # data <- data[!(data$pche_quartile == "5") , ]
 
 data$pche_quartile <- as.character(data$pche_quartile)
@@ -196,9 +196,9 @@ table(data$pche_quartile)
 # data$insurance <- relevel(data$insurance, 
 #                           ref = "Urban employee medical insurance")
 # 
-# # 不放保险了，放了以后urban_type不太显著
+# # 不放保险了, 并不检验机制
 
-# 最终id数量看看
+# check unique # of id
 unique_values <- data %>% distinct(id)
 print(unique_values) ## n is 16479, 16479/17708 ～= 93.1%
 
@@ -261,12 +261,12 @@ summary(no70_data$years)
 
 
 # Using OR + 95% CI ------------------------------------------------------------
-# 自定义函数来显示OR、原始系数、标准误差、显著性和95% CI
+# OR、原始系数、标准误差、显著性和95% CI
 summary_gee_or <- function(model) {
-  # 提取模型的系数表
+  
   model_summary <- summary(model)$coefficients
   
-  # 提取原始系数、标准误差、z值和p值
+ 
   coefs <- model_summary[, "Estimate"]
   se <- model_summary[, "Std.err"]
   
