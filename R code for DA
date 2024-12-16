@@ -82,7 +82,6 @@ table(data$education)
 
 
 # ## 删除 data 数据框中 chronic condition 列取值为 2 = missing的观测
-# ## 删了之后，交互项显著性不太好。marginal significant
 # data <- data[!(data$arthritis_pre_2011 == 2 | 
 #                    data$hypertension_pre_2011 == 2 |
 #                    data$diabetes_pre_2011 == 2 |
@@ -291,9 +290,9 @@ summary_gee_or <- function(model) {
                                 ifelse(p_value < 0.05, "*",
                                        ifelse(p_value < 0.1, ".", ""))))
   
-  # 组织结果为数据框
+ 
   results <- data.frame(
-    Variable = rownames(model_summary), # 添加变量名
+    Variable = rownames(model_summary), 
     Estimate = coefs,
     `Std. Error` = se,
     `z value` = z_value,
@@ -372,7 +371,7 @@ ggplot(predictions, aes(x = years, y = estimate, linetype = urban)) +
     labels = seq(0, 9, 1)
   ) + 
   scale_y_continuous(labels = scales::percent) + 
-  scale_linetype_manual(values = c("solid", "dashed", "dotted")) +  # 设置线型
+  scale_linetype_manual(values = c("solid", "dashed", "dotted")) +  
   theme(
     plot.title = element_text(hjust = 0.5, size = 16), 
     axis.title.x = element_text(size = 14), 
@@ -437,20 +436,20 @@ slopes_2$x
 
 group_levels <- unique(slopes_2$group)
 
-# 创建 simple slopes 图形对象，使用 linetype 区分 urban 水平，所有线条颜色均为黑色
+
 plot_simple_slopes_2 <- ggplot(slopes_2, aes(x = x, y = predicted, linetype = factor(group))) +
-  geom_line(size = 0.35, color = "black") +  # 设置线条大小和颜色为黑色
-  scale_y_continuous(labels = percent) +  # 将 y 轴的值显示为百分比
-  #  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2, color = "black") +  # 添加误差条
+  geom_line(size = 0.35, color = "black") +  
+  scale_y_continuous(labels = percent) +  
+  #  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2, color = "black") +  
   labs(x = "Years after baseline survey", y = "Predicted Pain Prevalence", linetype = "Urban-rural classification") +
   ggtitle("Predicted pain prevalence by aging process and urban-rural classification") +
-  scale_linetype_manual(values = c( "solid", "twodash", "dotted")) +  # 设置线条类型
+  scale_linetype_manual(values = c( "solid", "twodash", "dotted")) +  
   # scale_x_continuous(breaks = c(2011, 2013, 2015, 2018, 2020))+
-  scale_x_continuous(breaks = c(0:9)) +  # 设置特定时间点 
+  scale_x_continuous(breaks = c(0:9)) +  
   theme_minimal() +
   theme(
-    plot.title = element_text(hjust = 0.5),  # 标题居中
-    legend.position = "bottom"  # 图例放在最下面
+    plot.title = element_text(hjust = 0.5), 
+    legend.position = "bottom"  
   )
 
 print(plot_simple_slopes_2)
@@ -505,20 +504,20 @@ slopes_3$x
 
 group_levels <- unique(slopes_3$group)
 
-# 创建 simple slopes 图形对象，使用 linetype 区分 urban 水平，所有线条颜色均为黑色
+
 plot_simple_slopes_3 <- ggplot(slopes_3, aes(x = x, y = predicted, linetype = factor(group))) +
-  geom_line(size = 0.35, color = "black") +  # 设置线条大小和颜色为黑色
-  scale_y_continuous(labels = percent) +  # 将 y 轴的值显示为百分比
-  #  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2, color = "black") +  # 添加误差条
+  geom_line(size = 0.35, color = "black") +  
+  scale_y_continuous(labels = percent) +  
+  #  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2, color = "black") +  
   labs(x = "Years after baseline survey", y = "Predicted Pain Prevalence", linetype = "Urban-rural classification") +
   ggtitle("Predicted pain prevalence by aging process and urban-rural classification") +
-  scale_linetype_manual(values = c( "solid", "twodash", "dotted")) +  # 设置线条类型
+  scale_linetype_manual(values = c( "solid", "twodash", "dotted")) +  
   # scale_x_continuous(breaks = c(2011, 2013, 2015, 2018, 2020))+
-  scale_x_continuous(breaks = c(0:9)) +  # 设置特定时间点 
+  scale_x_continuous(breaks = c(0:9)) +  
   theme_minimal() +
   theme(
-    plot.title = element_text(hjust = 0.5),  # 标题居中
-    legend.position = "bottom"  # 图例放在最下面
+    plot.title = element_text(hjust = 0.5),  
+    legend.position = "bottom"  
   )
 
 print(plot_simple_slopes_3)
@@ -553,20 +552,20 @@ slopes_3_rf$x
 
 group_levels <- unique(slopes_3_rf$group)
 
-# 创建 simple slopes 图形对象，使用 linetype 区分 urban 水平，所有线条颜色均为黑色
+
 plot_simple_slopes_3_rf <- ggplot(slopes_3_rf, aes(x = x, y = predicted, linetype = factor(group))) +
-  geom_line(size = 0.35, color = "black") +  # 设置线条大小和颜色为黑色
-  scale_y_continuous(labels = percent) +  # 将 y 轴的值显示为百分比
-  #  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2, color = "black") +  # 添加误差条
+  geom_line(size = 0.35, color = "black") +  
+  scale_y_continuous(labels = percent) +  
+  #  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2, color = "black") +  
   labs(x = "Years after baseline survey", y = "Predicted Pain Prevalence", linetype = "Urban-rural classification") +
   ggtitle("Predicted pain prevalence by aging process and urban-rural classification") +
-  scale_linetype_manual(values = c( "solid", "twodash", "dotted")) +  # 设置线条类型
+  scale_linetype_manual(values = c( "solid", "twodash", "dotted")) +  
   # scale_x_continuous(breaks = c(2011, 2013, 2015, 2018, 2020))+
-  scale_x_continuous(breaks = c(0:9)) +  # 设置特定时间点 
+  scale_x_continuous(breaks = c(0:9)) +  
   theme_minimal() +
   theme(
-    plot.title = element_text(hjust = 0.5),  # 标题居中
-    legend.position = "bottom"  # 图例放在最下面
+    plot.title = element_text(hjust = 0.5),  
+    legend.position = "bottom"  
   )
 
 print(plot_simple_slopes_3_rf)
@@ -591,14 +590,14 @@ table(data_wave_2011$urban)
 
 
 # 假设数据框名称是 data_wave_2011
-data_des <- data_wave_2011  # 使用 data_wave_2011 作为数据框
+data_des <- data_wave_2011  
 
 # 描述统计和卡方检验函数
 describe_and_test <- function(data_des, grouping_var, y_vars) {
   results <- list()
   
   for (y_var in y_vars) {
-    # 计算频数
+    # 频数
     freq_table <- data_des %>%
       group_by(!!sym(grouping_var), !!sym(y_var)) %>%
       summarise(count = n(), .groups = 'drop') %>%
@@ -613,7 +612,7 @@ describe_and_test <- function(data_des, grouping_var, y_vars) {
       left_join(total_counts, by = grouping_var) %>%
       mutate(percent = format(round(count / total * 100, 3), nsmall = 3))
     
-    # 计算列百分比
+    # 列百分比
     total_col_counts <- data_des %>%
       group_by(!!sym(y_var)) %>%
       summarise(total_col = n(), .groups = 'drop')
@@ -623,11 +622,11 @@ describe_and_test <- function(data_des, grouping_var, y_vars) {
       mutate(col_percent = format(round(count / total_col * 100, 3), nsmall = 3)) %>%
       arrange(!!sym(grouping_var), !!sym(y_var))
     
-    # 进行卡方检验
+    # 卡方检验
     table <- table(data_des[[grouping_var]], data_des[[y_var]])
     chi_test <- chisq.test(table)
     
-    # 将结果存储到列表中
+    
     results[[y_var]] <- list(
       freq_table = freq_table,
       col_percent = col_percent,
@@ -643,16 +642,16 @@ describe_and_test <- function(data_des, grouping_var, y_vars) {
   return(results)
 }
 
-# 定义要分析的变量
+
 y_vars <- c("gender", "marital", "age_group", "education", "pche_quartile", 
             "arthritis_pre_2011", "hypertension_pre_2011", 
             "dyslipidemia_pre_2011", "diabetes_pre_2011") 
 grouping_var <- "urban"  # 分组变量
 
-# 计算描述统计和卡方检验
+
 results <- describe_and_test(data_des, grouping_var, y_vars)
 
-# 打印结果
+
 for (y_var in y_vars) {
   cat("\n分析变量：", y_var, "\n")
   
