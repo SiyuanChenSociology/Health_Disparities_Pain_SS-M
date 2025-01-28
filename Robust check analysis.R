@@ -130,16 +130,16 @@ summary(full_data$years)
 
 
 # Using OR + 95% CI ------------------------------------------------------------
-# 自定义函数来显示OR、原始系数、标准误差、显著性和95% CI
+
 summary_gee_or <- function(model) {
-  # 提取模型的系数表
+
   model_summary <- summary(model)$coefficients
   
-  # 提取原始系数、标准误差、z值和p值
+
   coefs <- model_summary[, "Estimate"]
   se <- model_summary[, "Std.err"]
   
-  # 检查是否有 "z value" 列名，如果没有则计算 z value
+ 
   if (!"z value" %in% colnames(model_summary)) {
     z_value <- coefs / se
   } else {
@@ -148,18 +148,17 @@ summary_gee_or <- function(model) {
   
   p_value <- 2 * pnorm(-abs(z_value)) # 计算 p 值
   
-  # 计算OR和95%置信区间
   exp_coefs <- exp(coefs)
   lower_ci <- exp(coefs - 1.96 * se)
   upper_ci <- exp(coefs + 1.96 * se)
   
-  # 添加显著性星号
+
   significance <- ifelse(p_value < 0.001, "***",
                          ifelse(p_value < 0.01, "**",
                                 ifelse(p_value < 0.05, "*",
                                        ifelse(p_value < 0.1, ".", ""))))
   
-  # 组织结果为数据框
+  
   results <- data.frame(
     Variable = rownames(model_summary), # 添加变量名
     Estimate = coefs,
@@ -176,14 +175,14 @@ summary_gee_or <- function(model) {
 }
 
 summary_gee_or2 <- function(model) {
-  # 提取模型的系数表
+
   model_summary <- summary(model)$coefficients
   
-  # 提取原始系数、标准误差、z值和p值
+ 
   coefs <- model_summary[, "Estimate"]
   se <- model_summary[, "Std.err"]
   
-  # 检查是否有 "z value" 列名，如果没有则计算 z value
+  
   if (!"z value" %in% colnames(model_summary)) {
     z_value <- coefs / se
   } else {
@@ -192,18 +191,18 @@ summary_gee_or2 <- function(model) {
   
   p_value <- 2 * pnorm(-abs(z_value)) # 计算 p 值
   
-  # 计算OR和95%置信区间
+
   exp_coefs <- exp(coefs)
   lower_ci <- exp(coefs - 1.96 * se)
   upper_ci <- exp(coefs + 1.96 * se)
   
-  # 添加显著性星号
+
   significance <- ifelse(p_value < 0.001, "***",
                          ifelse(p_value < 0.01, "**",
                                 ifelse(p_value < 0.05, "*",
                                        ifelse(p_value < 0.1, ".", ""))))
   
-  # 组织结果为数据框，并保留两位小数
+  
   results <- data.frame(
     Variable = rownames(model_summary), # 添加变量名
     Estimate = round(coefs, 2),
@@ -758,17 +757,17 @@ summary_gee_or(full_b1_toes)
 
 # pain_count
 
-# 假设 data 是你的数据框，包含 'wave', 'pain_count' 和 'urban' 列
 
-# 计算每个 wave 和 urban 组的平均疼痛计数
+
+# based on wave & urban 
 mean_pain_count <- data %>%
-  group_by(wave, urban) %>%  # 按 wave 和 urban 分组
+  group_by(wave, urban) %>%  
   summarise(mean_pain_count = mean(pain_count, na.rm = TRUE)) %>%
-  ungroup()  # 解除分组
+  ungroup()  
 
-# 绘制图形
+# plot
 ggplot(data = mean_pain_count, aes(x = wave, y = mean_pain_count, color = urban, group = urban)) +
-  geom_line(size = 1) +  # 根据 urban 列自动为每条线选择颜色
+  geom_line(size = 1) +  
   geom_point(size = 2) + 
   geom_text(aes(label = round(mean_pain_count, 2)), 
             vjust = -0.5, 
@@ -791,7 +790,7 @@ ggplot(data = mean_pain_count, aes(x = wave, y = mean_pain_count, color = urban,
     axis.text = element_text(size = 14),
     strip.text = element_text(size = 14),
     legend.text = element_text(size = 14),
-    legend.position = "bottom"  # 可以调整 legend 位置
+    legend.position = "bottom"  
   )
 
 
@@ -832,11 +831,11 @@ print(lrt_result)
 model_summary <- summary(model_2)
 model_summary 
 
-# 保留 3 位小数
-coef_fixed <- round(model_summary$coefficients$cond, 3)  # 固定效应
-coef_zero <- round(model_summary$coefficients$zi, 3)    # 零膨胀部分
+# 3 digitals
+coef_fixed <- round(model_summary$coefficients$cond, 3)  
+coef_zero <- round(model_summary$coefficients$zi, 3)    # zero-inflated
 
-# 输出格式化的结果
+# output
 print("Fixed Effects (Count):")
 print(coef_fixed)
 
