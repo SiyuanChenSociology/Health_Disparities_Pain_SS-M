@@ -146,7 +146,7 @@ summary_gee_or <- function(model) {
     z_value <- model_summary[, "z value"]
   }
   
-  p_value <- 2 * pnorm(-abs(z_value)) # 计算 p 值
+  p_value <- 2 * pnorm(-abs(z_value)) 
   
   exp_coefs <- exp(coefs)
   lower_ci <- exp(coefs - 1.96 * se)
@@ -160,7 +160,7 @@ summary_gee_or <- function(model) {
   
   
   results <- data.frame(
-    Variable = rownames(model_summary), # 添加变量名
+    Variable = rownames(model_summary), 
     Estimate = coefs,
     `Std. Error` = se,
     `z value` = z_value,
@@ -189,7 +189,7 @@ summary_gee_or2 <- function(model) {
     z_value <- model_summary[, "z value"]
   }
   
-  p_value <- 2 * pnorm(-abs(z_value)) # 计算 p 值
+  p_value <- 2 * pnorm(-abs(z_value)) 
   
 
   exp_coefs <- exp(coefs)
@@ -204,7 +204,7 @@ summary_gee_or2 <- function(model) {
   
   
   results <- data.frame(
-    Variable = rownames(model_summary), # 添加变量名
+    Variable = rownames(model_summary), 
     Estimate = round(coefs, 2),
     `Std. Error` = round(se, 2),
     `z value` = round(z_value, 2),
