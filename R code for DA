@@ -17,7 +17,8 @@ library(ggplot2)
 library(dplyr)
 library(expss)
 library(scales) #  percent in ggplot2
-library(ggeffects) # simple slope in ggplot2
+library(marginaleffects)
+
 
 
 # Variables re-coding ----------------------------------------------------------
